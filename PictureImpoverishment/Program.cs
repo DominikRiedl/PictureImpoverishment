@@ -20,7 +20,7 @@ namespace PictureImpoverishment
             try
             {
                 // Load the image
-                using (Bitmap imgload = new Bitmap("C:/Users/Ridley/Desktop/PicImp/Unmodified/image.jpg"))
+                using (Bitmap imgload = new Bitmap("C:/Users/domrie01/Documents/PictureImpoverishment/PictureImpoverishment/IMG/Unmod/img1.jpg"))
                 {
                     CalculatePixel(imgload);
                 }
@@ -49,9 +49,14 @@ namespace PictureImpoverishment
 
                     // Set the new color of the pixel
                     imgcalc.SetPixel(x, y, newColor);
+
                     i++;
-                    cent = (i / max) * 100;
-                    Console.WriteLine(i + " of " + max + " pixel processed || " + Math.Round(cent,2) + "% finished");
+
+                    if(i % 10000  == 0)
+                    {
+                        cent = (i / max) * 100;
+                        Console.WriteLine(i + " of " + max + " pixel processed || " + Math.Round(cent,2) + "% finished");
+                    }
                 }
             }
 
@@ -62,32 +67,7 @@ namespace PictureImpoverishment
             Color[] standardColors = new Color[]
             {
                 Color.Black,
-                Color.White,
-                Color.Red,
-                Color.Green,
-                Color.Blue,
-                Color.Yellow,
-                Color.Magenta,
-                Color.Cyan,
-                Color.Orange,
-                Color.Purple,
-                Color.Brown,
-                Color.Gray,
-                Color.LightGray,
-                Color.DarkGray,
-                Color.LightBlue,
-                Color.DarkBlue,
-                Color.LightGreen,
-                Color.DarkGreen,
-                Color.DarkRed,
-                Color.LightYellow,
-                Color.LightCyan,
-                Color.DarkCyan,
-                Color.DarkOrange,
-                Color.Pink,
-                Color.Beige,
-                Color.Turquoise,
-                Color.Gold,
+                Color.White                
             };
 
             Color closestColor = standardColors[0];
@@ -122,7 +102,7 @@ namespace PictureImpoverishment
             try
             {
                 // Save the modified image
-                imgsave.Save("C:/Users/Ridley/Desktop/PicImp/Modified/mod_image.jpg");
+                imgsave.Save($"C:/Users/domrie01/Documents/PictureImpoverishment/PictureImpoverishment/IMG/Mod/mod_img.png");
             }
             catch (Exception ex)
             {
@@ -132,6 +112,7 @@ namespace PictureImpoverishment
             {
                 imgsave.Dispose();
 
+                Console.WriteLine();
                 Console.WriteLine("Image Processing finished, push any button to close.");
                 Console.ReadKey();
             }
