@@ -6,16 +6,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Audio\**" />
+    <Compile Remove="IMG\**" />
+    <EmbeddedResource Remove="Audio\**" />
+    <EmbeddedResource Remove="IMG\**" />
+    <None Remove="Audio\**" />
+    <None Remove="IMG\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="NAudio" Version="2.1.0" />
     <PackageReference Include="System.Drawing.Common" Version="5.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="IMG\Mod\" />
-    <Folder Include="IMG\Unmod\" />
   </ItemGroup>
 
 </Project>
