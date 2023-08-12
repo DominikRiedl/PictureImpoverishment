@@ -148,8 +148,6 @@ namespace PictureImpoverishment
                 {
                     Console.Clear();
                     Console.WriteLine("An error occurred while loading the image: " + ex.Message);
-                    Console.ReadKey();
-                    break;
                 }
             }
         }
