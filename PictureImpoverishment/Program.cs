@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace PictureImpoverishment
@@ -10,25 +11,39 @@ namespace PictureImpoverishment
     internal class Program
     {
         public const int timer = 2000;
-        public const int timerFiles = 200;
-        public static readonly string directoryPath = @"IMG\Unmod\";
+        public const int timerFiles = 250;
+        public const int timerIntermission = 500;
+
+        public static readonly string preprossessingIMGFilePath = @"IMG\Unmod\";
+        public static readonly string savingIMGFilePath = @"IMG\Mod\";
+
         public static readonly string audioFilePathSuccess = @"Audio\successAudio.mp3";
-        public static readonly string audioFilePath = @"Audio\";
-        public static readonly string loadFilePath = @"IMG\Unmod\";
-        public static readonly string saveFilePath = @"IMG\Mod\";
+        public static readonly string audioFilePathFinished = @"Audio\finishedAudio.mp3";
+        public static readonly string audioFilePath = @"Audio\Background\";
         static bool stopMusic = false;
+
+        // Import the necessary Windows API functions from kernel32.dll
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern IntPtr GetConsoleWindow();
+
+        [DllImport("user32.dll")]
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+        private const int SW_MAXIMIZE = 3;
 
         static void Main(string[] args)
         {
+            IntPtr hWnd = GetConsoleWindow();
+            if (hWnd != IntPtr.Zero)
+            {
+                ShowWindow(hWnd, SW_MAXIMIZE);
+            }
+
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("       --------------------------------------------------------------------------------------------------");
-            Console.WriteLine("       |                     --> PICTURE IMPOVERISHMENT V1.3 Release Build <--                          |");
-            Console.WriteLine("       --------------------------------------------------------------------------------------------------");
+            Console.WriteLine("                        --------------------------------------------------------------------------------------------------");
+            Console.WriteLine("                        |                     --> PICTURE IMPOVERISHMENT V1.3 Release Build <--                          |");
+            Console.WriteLine("                        --------------------------------------------------------------------------------------------------");
             Console.WriteLine();
-            Console.WriteLine("Press any button to continue.");
-            Console.ReadKey();
-            Console.Clear();
-            Console.ForegroundColor= ConsoleColor.White;
+            Console.WriteLine("                        Press any button to continue.");            
 
             try
             {
@@ -38,7 +53,11 @@ namespace PictureImpoverishment
                 Thread musicThread = new Thread(() => PlayRandomBackgroundMusic(audioFiles));
                 musicThread.Start();
 
-                int files = RenameFilesIncremental(directoryPath);
+                Console.ReadKey();
+                Console.Clear();
+                Console.ForegroundColor = ConsoleColor.White;
+
+                int files = RenameFilesIncremental(preprossessingIMGFilePath);
                 LoadPicture(files);
 
                 // Once the main logic is done, signal the music thread to stop
@@ -47,8 +66,8 @@ namespace PictureImpoverishment
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"An error occurred: {ex.Message}");
-            }
+                Console.WriteLine($"                        An error occurred: {ex.Message}");
+            }            
         }
         static List<string> GetAudioFiles()
         {
@@ -56,10 +75,7 @@ namespace PictureImpoverishment
             List<string> files = new List<string>();
             foreach (var item in audioFiles)
             {
-                if (!item.Contains("successAudio"))
-                {
-                    files.Add(item);
-                }
+                files.Add(item);
             }
             return files;
         }
@@ -75,11 +91,12 @@ namespace PictureImpoverishment
                 using (var outputDevice = new WaveOutEvent())
                 {
                     outputDevice.Init(audioFile);
+                    outputDevice.Volume = 0.5f;
                     outputDevice.Play();
 
                     while (!stopMusic && outputDevice.PlaybackState == PlaybackState.Playing)
                     {
-                        Thread.Sleep(1000);
+                        Thread.Sleep(timer);
                     }
                 }
             }
@@ -88,10 +105,12 @@ namespace PictureImpoverishment
         {
             if (!Directory.Exists(directoryPath))
             {
-                Console.WriteLine("Directory not found.");
+                Console.WriteLine("                        Directory not found.");
             }
-            Console.WriteLine("DIRECTORY FOUND...");
+            Console.CursorVisible = false;
+            Console.WriteLine("                        DIRECTORY FOUND...");
             Console.WriteLine();
+            Thread.Sleep(1000);
 
             string[] files = Directory.GetFiles(directoryPath);
 
@@ -104,42 +123,42 @@ namespace PictureImpoverishment
                 try
                 {
                     File.Move(oldFilePath, newFilePath);
-                    Console.WriteLine($"Renamed '{Path.GetFileName(oldFilePath)}' to '{newFileName}'.");
+                    Console.WriteLine($"                        Renamed '{Path.GetFileName(oldFilePath)}' to '{newFileName}'.");
                     Thread.Sleep(timerFiles);
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error renaming '{Path.GetFileName(oldFilePath)}': {ex.Message}");
+                    Console.WriteLine($"                        Error renaming '{Path.GetFileName(oldFilePath)}': {ex.Message}");
                 }
             }
 
             return files.Length;
         }
-        public static void LoadPicture(int files)
+        static void LoadPicture(int files)
         {
-            for (int i = 1; i < files+1; i++)
+            for (int i = 1; i < files + 1; i++)
             {
                 string formattedCounter = String.Format("{0:D4}", i);
                 string filename = $"IMG_{formattedCounter}.jpg";
+
                 Console.Clear();
-                Console.WriteLine($"LOADING 'IMG_{formattedCounter}.JPG'...");
-                Thread.Sleep(timer);
+                Console.WriteLine($"                        LOADING 'IMG_{formattedCounter}.JPG'...");
+                Thread.Sleep(timerIntermission);
 
                 try
-                {
-                    // Load image
-                    using (Bitmap imgLoad = new Bitmap(loadFilePath + filename))
+                {                    
+                    using (Bitmap imgLoad = new Bitmap(preprossessingIMGFilePath + filename))
                     {
-                        Console.WriteLine("CALCULATING AVG COLOR VALUE...");
+                        Console.WriteLine("                        CALCULATING AVG COLOR VALUE...");
                         Thread.Sleep(timer);
                         double avg = Math.Round(CalculateAverage(imgLoad, filename));
 
                         Console.Clear();
-                        Console.WriteLine($"AVERAGE R/G/B VALUE IS: {avg}");
-                        Thread.Sleep(timer);
+                        Console.WriteLine($"                        AVERAGE R/G/B VALUE IS: {avg}");
+                        Thread.Sleep(timerIntermission);
                         Console.ForegroundColor = ConsoleColor.White;
 
-                        Console.WriteLine("CALCULATING INDIVIDUAL PIXELS...");
+                        Console.WriteLine("                        CALCULATING INDIVIDUAL PIXELS...");
                         Thread.Sleep(timer);
                         CalculatePixel(imgLoad, filename, avg);
                     }
@@ -147,11 +166,41 @@ namespace PictureImpoverishment
                 catch (Exception ex)
                 {
                     Console.Clear();
-                    Console.WriteLine("An error occurred while loading the image: " + ex.Message);
+                    Console.WriteLine("                        An error occurred while loading the image: " + ex.Message);
                 }
             }
+
+            Thread.Sleep(1000);
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("                        ALL PICTURES PROCESSED.");
+            PlayAudio(audioFilePathFinished);
+
+            Console.WriteLine();
+            Console.WriteLine("                        Closing in 60 seconds.");
+            Thread.Sleep(10000);
+            Console.WriteLine("                        Closing in 50 seconds.");
+            Thread.Sleep(10000);
+            Console.WriteLine("                        Closing in 40 seconds.");
+            Thread.Sleep(10000);
+            Console.WriteLine("                        Closing in 30 seconds.");
+            Thread.Sleep(10000);
+            Console.WriteLine("                        Closing in 20 seconds.");
+            Thread.Sleep(10000);
+            Console.WriteLine("                        Closing in 10 seconds.");
+            Thread.Sleep(5000);
+            Console.WriteLine("                        Closing in 5 seconds.");
+            Thread.Sleep(1000);
+            Console.WriteLine("                        Closing in 4 seconds.");
+            Thread.Sleep(1000);
+            Console.WriteLine("                        Closing in 3 seconds.");
+            Thread.Sleep(1000);
+            Console.WriteLine("                        Closing in 2 seconds.");
+            Thread.Sleep(1000);
+            Console.WriteLine("                        Closing in 1 seconds.");
+            Thread.Sleep(1000);
         }
-        public static double CalculateAverage(Bitmap imgCalc, string filename)
+        static double CalculateAverage(Bitmap imgCalc, string filename)
         {
             double i = 0;
             double max = imgCalc.Height * imgCalc.Width;
@@ -177,14 +226,14 @@ namespace PictureImpoverishment
                         string formattedCounter = (i % 100000000).ToString("00\\.000\\.000");
                         string formattedPercent = (Math.Round(percentage, 1) * 100).ToString("00\\,00\\%");
                         percentage = (i / max) * 100;
-                        Console.WriteLine("STEP 1/2 || Calculating average pixel value || " + formattedCounter + "/" + formattedMax + " pixel processed || " + formattedPercent + $" --> {filename}");
+                        Console.WriteLine("             STEP 1/2 || Calculating average pixel value || " + formattedCounter + "/" + formattedMax + " pixel processed || " + formattedPercent + $" --> {filename}");
                     }
                 }
             }
 
             return (value / 3) / max;
         }
-        public static void CalculatePixel(Bitmap imgCalc, string filename, double avg)
+        static void CalculatePixel(Bitmap imgCalc, string filename, double avg)
         {
             double i = 0;
             double max = imgCalc.Height * imgCalc.Width;
@@ -214,14 +263,14 @@ namespace PictureImpoverishment
                         string formattedCounter = (i % 100000000).ToString("00\\.000\\.000");
                         string formattedPercent = (Math.Round(percentage, 1) * 100).ToString("00\\,00\\%");
                         percentage = (i / max) * 100;
-                        Console.WriteLine("STEP 2/2 || Calculating new pixel color || " + formattedCounter + "/" + formattedMax + " pixel processed || " + formattedPercent + $" --> {filename}");
+                        Console.WriteLine("             STEP 2/2 || Calculating new pixel color || " + formattedCounter + "/" + formattedMax + " pixel processed || " + formattedPercent + $" --> {filename}");
                     }
                 }
             }
 
             SavePicture(imgCalc, filename);
         }
-        public static Color PickColor(Color pxcolor, double avg)
+        static Color PickColor(Color pxcolor, double avg)
         {
             if (pxcolor.R < avg && pxcolor.G < avg && pxcolor.B < avg)
             {
@@ -230,40 +279,37 @@ namespace PictureImpoverishment
 
             return Color.White;
         }
-
-        public static void SavePicture(Bitmap imgSave, string filename)
+        static void SavePicture(Bitmap imgSave, string filename)
         {
             try
-            {
-                // Save the modified image
-                imgSave.Save(saveFilePath + "MOD_" + filename);
+            {                
+                imgSave.Save(savingIMGFilePath + "MOD_" + filename);
             }
             catch (Exception ex)
             {
                 Console.Clear();
-                Console.WriteLine("An error occurred while saving the image: " + ex.Message);
+                Console.WriteLine("                        An error occurred while saving the image: " + ex.Message);
                 Console.ReadKey();
             }
             finally
             {
                 imgSave.Dispose();
 
-                Console.WriteLine();
+                Console.Clear();
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"PROCESSING FINISHED. YOUR FILE WAS SAVED SUCCESSFULLY AS 'MOD_{filename}'!");
-
-
-                using (AudioFileReader audioFile = new AudioFileReader(audioFilePathSuccess))
-                using (var outputDevice = new WaveOutEvent())
-                {
-                    outputDevice.Init(audioFile);
-                    outputDevice.Play();
-                    while (outputDevice.PlaybackState == PlaybackState.Playing)
-                    {
-                        Thread.Sleep(3000);
-                    }
-                }
+                Console.WriteLine($"                        PROCESSING FINISHED. YOUR FILE WAS SAVED SUCCESSFULLY AS 'MOD_{filename}'!");
+                PlayAudio(audioFilePathSuccess);
                 Console.ForegroundColor = ConsoleColor.White;
+            }
+        }
+        static void PlayAudio(string audioFilePath)
+        {
+            using (AudioFileReader audioFile = new AudioFileReader(audioFilePath))
+            using (var outputDevice = new WaveOutEvent())
+            {
+                outputDevice.Init(audioFile);
+                outputDevice.Play();
+                Thread.Sleep(timer);
             }
         }
     }
